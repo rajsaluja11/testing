@@ -1,3 +1,36 @@
 ---
-- name: HashiCorp Packer Automation to AWS Provision
-  uses: shreyasingh18/Packer-AWS-Actions@3.0
+- hosts: local
+  become: yes
+  vars:
+     http_port: 80
+     doc_dir: /ansible/
+     doc_root: /var/www/html/ansible/
+     max_clients: 5
+     ansible_python_interpreter: python
+  vars_prompt:
+      - name: "username"
+        prompt: what is your name ?
+  tasks:
+      - name: Ensure lib-python installed
+        yum: name=libselinux-python state=present
+      - name: ensure httpd installed
+        yum: name=httpd state=present
+        when: ansible_os_family == "RedHat"
+
+      - name: create a directory
+        file: path=/var/www/html/ansible state=directory
+
+      - name: ensure apache running
+        service: name=httpd enabled=yes state=started
+
+      - name: deploy template
+        template: src=templates/proxy.conf dest=/etc/httpd/conf.d/httpd.conf
+        notify:
+
+      - name: copy static file
+        template: src=templates/index.html dest={{doc_root}}/index.html mode=0644
+  handlers:
+      - name: Restart apache
+        service: name=httpd state=restarted
+      - name: Restart tomcat7
+        service: name=tomcat7 state=restarted
