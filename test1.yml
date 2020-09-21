@@ -23,13 +23,6 @@
       - name: ensure apache running
         service: name=httpd enabled=yes state=started
 
-      - name: deploy template
-        template: src=templates/proxy.conf dest=/etc/httpd/conf.d/httpd.conf
-        notify:
-
-      - name: copy static file
-        template: src=templates/index.html dest={{doc_root}}/index.html mode=0644
-  handlers:
       - name: Restart apache
         service: name=httpd state=restarted
       - name: Restart tomcat7
